@@ -770,22 +770,20 @@
             }
             
             .sidebar {
-                width: 280px;
-                margin-right: 0;
-                margin-bottom: 30px;
                 position: fixed;
                 top: 0;
-                left: 0;
+                left: -100%;
+                width: 280px;
                 height: 100vh;
-                z-index: 1002;
-                transform: translateX(-100%);
+                margin: 0;
                 border-radius: 0;
+                z-index: 1002;
+                transition: left 0.3s ease;
                 overflow-y: auto;
-                transition: transform 0.3s ease;
             }
             
             .sidebar.active {
-                transform: translateX(0);
+                left: 0;
                 box-shadow: 5px 0 25px rgba(0,0,0,0.15);
             }
             
@@ -940,6 +938,16 @@
         html {
             scroll-behavior: smooth;
         }
+        
+        /* Tool Card Animation */
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .tool-card {
+            animation: slideUp 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -1006,6 +1014,9 @@
                     <span>Helping</span>
                     <span>PDF Tool</span>
                 </div>
+                <button class="mobile-menu-btn close-sidebar" id="close-sidebar" style="position: absolute; top: 20px; right: 20px;">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <h3>PDF Tool Categories</h3>
             <ul>
@@ -1164,7 +1175,7 @@
                 <div class="footer-column">
                     <h3>Contact Info</h3>
                     <ul>
-                        <li><a href="mailto:sarfraz12561@gmail.com"><i class="fas fa-envelope"></i> info@helpingpdftool.com</a></li>
+                        <li><a href="mailto:sarfaraz12561@gmail.com"><i class="fas fa-envelope"></i> info@helpingpdftool.com</a></li>
                         <li><i class="fas fa-globe"></i> www.helpingpdftool.com</li>
                         <li>
                             <div class="social-icons">
@@ -1185,18 +1196,31 @@
     </footer>
 
     <script>
-        // Global variables
+        // ============================================
+        // GLOBAL VARIABLES
+        // ============================================
         let currentTool = '';
         let selectedFiles = [];
         let currentCategory = 'all';
         let toolsData = [];
         
-        // DOM elements
+        // ============================================
+        // DOM ELEMENTS - ALL DECLARED AT TOP LEVEL
+        // ============================================
+        // Core elements
         const toolsContainer = document.getElementById('tools-container');
         const filterButtons = document.querySelectorAll('.filter-btn');
         const sidebarLinks = document.querySelectorAll('.sidebar li');
         const footerLinks = document.querySelectorAll('.footer-link, .footer-tool');
         const toolModal = document.getElementById('tool-modal');
+        
+        // Sidebar elements
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        // Modal elements
         const closeModal = document.querySelector('.close-modal');
         const cancelBtn = document.getElementById('cancel-btn');
         const processBtn = document.getElementById('process-btn');
@@ -1206,340 +1230,150 @@
         const modalTitle = document.getElementById('modal-title');
         const toolSpecificOptions = document.getElementById('tool-specific-options');
         const successMessage = document.getElementById('success-message');
-        const readMoreButtons = document.querySelectorAll('.read-more');
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const privacyLink = document.getElementById('privacy-link');
-        const termsLink = document.getElementById('terms-link');
-        const blogLinkFooter = document.getElementById('blog-link-footer');
-        const aboutLink = document.getElementById('about-link');
-        const sidebarBlogLink = document.getElementById('sidebar-blog-link');
+        
+        // Navigation elements
         const searchInput = document.getElementById('search-input');
         const searchBtn = document.getElementById('search-btn');
         const toolsSectionTitle = document.getElementById('tools-section-title');
         const articlesSection = document.getElementById('articles-section');
+        const readMoreButtons = document.querySelectorAll('.read-more');
         
-        // Tool data
+        // Footer links
+        const aboutLink = document.getElementById('about-link');
+        const privacyLink = document.getElementById('privacy-link');
+        const termsLink = document.getElementById('terms-link');
+        const blogLinkFooter = document.getElementById('blog-link-footer');
+        const sidebarBlogLink = document.getElementById('sidebar-blog-link');
+        
+        // ============================================
+        // DATA DEFINITIONS
+        // ============================================
         const tools = [
-            {
-                id: 'merge',
-                name: 'Merge PDF',
-                category: 'organize',
-                icon: 'fas fa-object-group',
-                description: 'Combine multiple PDF files into a single document in the order you prefer',
-                color: '#e53935'
-            },
-            {
-                id: 'split',
-                name: 'Split PDF',
-                category: 'organize',
-                icon: 'fas fa-cut',
-                description: 'Extract specific pages or split a PDF into multiple documents',
-                color: '#2196F3'
-            },
-            {
-                id: 'compress',
-                name: 'Compress PDF',
-                category: 'organize',
-                icon: 'fas fa-compress-alt',
-                description: 'Reduce PDF file size while maintaining good quality for sharing',
-                color: '#4CAF50'
-            },
-            {
-                id: 'watermark',
-                name: 'Add Watermark',
-                category: 'edit',
-                icon: 'fas fa-tint',
-                description: 'Add text or image watermark to PDF pages for copyright protection',
-                color: '#FF9800'
-            },
-            {
-                id: 'rotate',
-                name: 'Rotate PDF',
-                category: 'edit',
-                icon: 'fas fa-redo',
-                description: 'Rotate PDF pages 90, 180 or 270 degrees clockwise or counterclockwise',
-                color: '#9C27B0'
-            },
-            {
-                id: 'pdf-to-word',
-                name: 'PDF to Word',
-                category: 'convert',
-                icon: 'fas fa-file-word',
-                description: 'Convert PDF files to editable Microsoft Word documents',
-                color: '#2196F3'
-            },
-            {
-                id: 'word-to-pdf',
-                name: 'Word to PDF',
-                category: 'convert',
-                icon: 'fas fa-file-pdf',
-                description: 'Convert Word documents to PDF format while preserving formatting',
-                color: '#e53935'
-            },
-            {
-                id: 'pdf-to-excel',
-                name: 'PDF to Excel',
-                category: 'convert',
-                icon: 'fas fa-file-excel',
-                description: 'Extract tables and data from PDF files into editable Excel spreadsheets',
-                color: '#4CAF50'
-            },
-            {
-                id: 'excel-to-pdf',
-                name: 'Excel to PDF',
-                category: 'convert',
-                icon: 'fas fa-file-pdf',
-                description: 'Convert Excel spreadsheets to PDF format for easy sharing',
-                color: '#e53935'
-            },
-            {
-                id: 'pdf-to-ppt',
-                name: 'PDF to PowerPoint',
-                category: 'convert',
-                icon: 'fas fa-file-powerpoint',
-                description: 'Convert PDF files to editable PowerPoint presentations',
-                color: '#FF9800'
-            },
-            {
-                id: 'ppt-to-pdf',
-                name: 'PowerPoint to PDF',
-                category: 'convert',
-                icon: 'fas fa-file-pdf',
-                description: 'Convert PowerPoint presentations to PDF format for universal viewing',
-                color: '#e53935'
-            },
-            {
-                id: 'pdf-to-jpg',
-                name: 'PDF to JPG',
-                category: 'convert',
-                icon: 'fas fa-file-image',
-                description: 'Convert PDF pages to high-quality JPG images for use in documents',
-                color: '#9C27B0'
-            },
-            {
-                id: 'jpg-to-pdf',
-                name: 'JPG to PDF',
-                category: 'convert',
-                icon: 'fas fa-file-pdf',
-                description: 'Convert JPG, PNG, and other image files to PDF format',
-                color: '#e53935'
-            },
-            {
-                id: 'protect',
-                name: 'Protect PDF',
-                category: 'security',
-                icon: 'fas fa-lock',
-                description: 'Add password protection to PDF files to prevent unauthorized access',
-                color: '#FF5722'
-            },
-            {
-                id: 'unlock',
-                name: 'Unlock PDF',
-                category: 'security',
-                icon: 'fas fa-unlock',
-                description: 'Remove password protection from PDF files if you have the password',
-                color: '#4CAF50'
-            },
-            {
-                id: 'edit-text',
-                name: 'Edit PDF Text',
-                category: 'edit',
-                icon: 'fas fa-edit',
-                description: 'Edit text content in PDF files directly without converting',
-                color: '#2196F3'
-            },
-            {
-                id: 'page-numbers',
-                name: 'Add Page Numbers',
-                category: 'edit',
-                icon: 'fas fa-list-ol',
-                description: 'Insert page numbers into PDF documents with custom formatting',
-                color: '#9C27B0'
-            },
-            {
-                id: 'repair',
-                name: 'Repair PDF',
-                category: 'other',
-                icon: 'fas fa-tools',
-                description: 'Fix corrupted or damaged PDF files and restore their contents',
-                color: '#FF9800'
-            },
-            {
-                id: 'sign',
-                name: 'Sign PDF',
-                category: 'other',
-                icon: 'fas fa-signature',
-                description: 'Add digital signatures to PDF documents for authentication',
-                color: '#2196F3'
-            },
-            {
-                id: 'ocr',
-                name: 'OCR PDF',
-                category: 'other',
-                icon: 'fas fa-font',
-                description: 'Convert scanned PDFs to searchable and editable text using OCR',
-                color: '#4CAF50'
-            },
-            {
-                id: 'metadata',
-                name: 'PDF Metadata',
-                category: 'other',
-                icon: 'fas fa-info-circle',
-                description: 'View and edit PDF metadata like title, author, keywords, etc',
-                color: '#9C27B0'
-            }
+            { id: 'merge', name: 'Merge PDF', category: 'organize', icon: 'fas fa-object-group', description: 'Combine multiple PDF files into a single document in the order you prefer' },
+            { id: 'split', name: 'Split PDF', category: 'organize', icon: 'fas fa-cut', description: 'Extract specific pages or split a PDF into multiple documents' },
+            { id: 'compress', name: 'Compress PDF', category: 'organize', icon: 'fas fa-compress-alt', description: 'Reduce PDF file size while maintaining good quality for sharing' },
+            { id: 'watermark', name: 'Add Watermark', category: 'edit', icon: 'fas fa-tint', description: 'Add text or image watermark to PDF pages for copyright protection' },
+            { id: 'rotate', name: 'Rotate PDF', category: 'edit', icon: 'fas fa-redo', description: 'Rotate PDF pages 90, 180 or 270 degrees clockwise or counterclockwise' },
+            { id: 'pdf-to-word', name: 'PDF to Word', category: 'convert', icon: 'fas fa-file-word', description: 'Convert PDF files to editable Microsoft Word documents' },
+            { id: 'word-to-pdf', name: 'Word to PDF', category: 'convert', icon: 'fas fa-file-pdf', description: 'Convert Word documents to PDF format while preserving formatting' },
+            { id: 'pdf-to-excel', name: 'PDF to Excel', category: 'convert', icon: 'fas fa-file-excel', description: 'Extract tables and data from PDF files into editable Excel spreadsheets' },
+            { id: 'excel-to-pdf', name: 'Excel to PDF', category: 'convert', icon: 'fas fa-file-pdf', description: 'Convert Excel spreadsheets to PDF format for easy sharing' },
+            { id: 'pdf-to-ppt', name: 'PDF to PowerPoint', category: 'convert', icon: 'fas fa-file-powerpoint', description: 'Convert PDF files to editable PowerPoint presentations' },
+            { id: 'ppt-to-pdf', name: 'PowerPoint to PDF', category: 'convert', icon: 'fas fa-file-pdf', description: 'Convert PowerPoint presentations to PDF format for universal viewing' },
+            { id: 'pdf-to-jpg', name: 'PDF to JPG', category: 'convert', icon: 'fas fa-file-image', description: 'Convert PDF pages to high-quality JPG images for use in documents' },
+            { id: 'jpg-to-pdf', name: 'JPG to PDF', category: 'convert', icon: 'fas fa-file-pdf', description: 'Convert JPG, PNG, and other image files to PDF format' },
+            { id: 'protect', name: 'Protect PDF', category: 'security', icon: 'fas fa-lock', description: 'Add password protection to PDF files to prevent unauthorized access' },
+            { id: 'unlock', name: 'Unlock PDF', category: 'security', icon: 'fas fa-unlock', description: 'Remove password protection from PDF files if you have the password' },
+            { id: 'edit-text', name: 'Edit PDF Text', category: 'edit', icon: 'fas fa-edit', description: 'Edit text content in PDF files directly without converting' },
+            { id: 'page-numbers', name: 'Add Page Numbers', category: 'edit', icon: 'fas fa-list-ol', description: 'Insert page numbers into PDF documents with custom formatting' },
+            { id: 'repair', name: 'Repair PDF', category: 'other', icon: 'fas fa-tools', description: 'Fix corrupted or damaged PDF files and restore their contents' },
+            { id: 'sign', name: 'Sign PDF', category: 'other', icon: 'fas fa-signature', description: 'Add digital signatures to PDF documents for authentication' },
+            { id: 'ocr', name: 'OCR PDF', category: 'other', icon: 'fas fa-font', description: 'Convert scanned PDFs to searchable and editable text using OCR' },
+            { id: 'metadata', name: 'PDF Metadata', category: 'other', icon: 'fas fa-info-circle', description: 'View and edit PDF metadata like title, author, keywords, etc' }
         ];
         
-        // Tool modal data
         const toolModalData = {
-            'merge': {
-                title: 'Merge PDF Files',
-                description: 'Combine multiple PDF files into a single document',
-                options: `<div class="option-group">
-                    <h4>Merge Options</h4>
-                    <label><input type="checkbox" id="order-checkbox"> Merge in the order files are added</label>
-                    <label><input type="checkbox" id="bookmarks-checkbox"> Preserve bookmarks from original files</label>
-                </div>`
-            },
-            'split': {
-                title: 'Split PDF Files',
-                description: 'Extract specific pages or split by page ranges',
-                options: `<div class="option-group">
-                    <h4>Split Options</h4>
-                    <div style="margin-bottom: 10px;">
-                        <label><input type="radio" name="split-method" value="pages" checked> Split by page ranges (e.g., 1-3, 4-7)</label>
-                    </div>
-                    <div>
-                        <label><input type="radio" name="split-method" value="intervals"> Split every <input type="number" min="1" value="1" style="width: 60px;"> pages</label>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <input type="text" id="page-ranges" placeholder="Enter page ranges (e.g., 1-3, 5, 7-10)" style="width: 100%; padding: 8px;">
-                    </div>
-                </div>`
-            },
-            'compress': {
-                title: 'Compress PDF Files',
-                description: 'Reduce PDF file size for easier sharing',
-                options: `<div class="option-group">
-                    <h4>Compression Level</h4>
-                    <div style="margin-bottom: 10px;">
-                        <label><input type="radio" name="compression" value="low" checked> Low compression (best quality)</label>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <label><input type="radio" name="compression" value="medium"> Medium compression (recommended)</label>
-                    </div>
-                    <div>
-                        <label><input type="radio" name="compression" value="high"> High compression (smallest file size)</label>
-                    </div>
-                </div>`
-            }
+            'merge': { title: 'Merge PDF Files', options: '<div><h4>Merge Options</h4><label><input type="checkbox"> Merge in order</label><label><input type="checkbox"> Preserve bookmarks</label></div>' },
+            'split': { title: 'Split PDF Files', options: '<div><h4>Split Options</h4><label><input type="radio" name="split" checked> Split by ranges</label><label><input type="radio" name="split"> Split every page</label></div>' },
+            'compress': { title: 'Compress PDF Files', options: '<div><h4>Compression Level</h4><label><input type="radio" name="compress" checked> Low (best quality)</label><label><input type="radio" name="compress"> Medium</label><label><input type="radio" name="compress"> High (smallest)</label></div>' }
         };
         
-        // Initialize the application
-        function init() {
+        // ============================================
+        // INITIALIZATION FUNCTIONS
+        // ============================================
+        function initializeApp() {
+            console.log('Initializing Helping PDF Tool...');
+            
+            // Initialize data
             toolsData = [...tools];
+            
+            // Render initial tools
             renderTools();
-            initEventListeners();
+            
+            // Set up all event listeners
+            setupEventListeners();
+            
+            // Check for URL hash parameters
             checkUrlHash();
             
-            // Set initial sidebar state for mobile
+            // Set initial sidebar state
             if (window.innerWidth <= 1024) {
                 sidebar.classList.remove('active');
+                sidebar.style.left = '-100%';
+            } else {
+                sidebar.classList.add('active');
+                sidebar.style.left = '0';
             }
+            
+            console.log('App initialized successfully');
         }
         
-        // Render tools to the grid
-        function renderTools() {
-            toolsContainer.innerHTML = '';
+        function setupEventListeners() {
+            console.log('Setting up event listeners...');
             
-            toolsData.forEach(tool => {
-                const toolCard = document.createElement('div');
-                toolCard.className = 'tool-card';
-                toolCard.setAttribute('data-category', tool.category);
-                toolCard.setAttribute('data-tool', tool.id);
-                
-                toolCard.innerHTML = `
-                    <div class="tool-icon">
-                        <i class="${tool.icon}"></i>
-                    </div>
-                    <div class="tool-content">
-                        <h3>${tool.name}</h3>
-                        <p>${tool.description}</p>
-                        <a class="tool-btn open-tool" data-tool="${tool.id}">Use Tool</a>
-                    </div>
-                `;
-                
-                toolsContainer.appendChild(toolCard);
-            });
+            // ============================================
+            // SIDEBAR TOGGLE - FIXED
+            // ============================================
+            mobileMenuBtn.addEventListener('click', toggleSidebar);
+            closeSidebarBtn.addEventListener('click', closeSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
             
-            // Re-attach event listeners to new tool cards
-            document.querySelectorAll('.open-tool').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const tool = this.getAttribute('data-tool');
-                    openToolModal(tool);
-                });
-            });
-            
-            // Add click event to entire tool card
-            document.querySelectorAll('.tool-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    const tool = this.getAttribute('data-tool');
-                    openToolModal(tool);
-                });
-            });
-        }
-        
-        // Initialize event listeners
-        function initEventListeners() {
-            // Filter buttons
+            // ============================================
+            // FILTER BUTTONS
+            // ============================================
             filterButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const category = this.getAttribute('data-category');
+                    console.log('Filter button clicked:', category);
                     filterToolsByCategory(category);
                     updateActiveFilter(this);
                     scrollToToolsSection();
                 });
             });
             
-            // Sidebar links
+            // ============================================
+            // SIDEBAR LINKS
+            // ============================================
             sidebarLinks.forEach(link => {
-                link.addEventListener('click', function() {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
                     if (this === sidebarBlogLink || this.classList.contains('blog-link')) {
+                        console.log('Blog link clicked');
                         scrollToArticlesSection();
-                        closeMobileSidebar();
+                        closeSidebar();
                     } else {
                         const category = this.getAttribute('data-category');
                         if (category) {
+                            console.log('Sidebar category clicked:', category);
                             filterToolsByCategory(category);
                             updateActiveSidebar(this);
                             scrollToToolsSection();
-                            closeMobileSidebar();
+                            closeSidebar();
                         }
                     }
                 });
             });
             
-            // Footer links - universal sync functionality
+            // ============================================
+            // FOOTER LINKS - UNIVERSAL NAVIGATION
+            // ============================================
             footerLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
                     
-                    // Check if it's a category link
                     const category = this.getAttribute('data-category');
+                    const tool = this.getAttribute('data-tool');
+                    
                     if (category) {
+                        console.log('Footer category clicked:', category);
                         scrollToToolsSection();
                         setTimeout(() => {
                             filterToolsByCategory(category);
                             updateActiveFilterByCategory(category);
                         }, 100);
-                    }
-                    
-                    // Check if it's a tool link
-                    const tool = this.getAttribute('data-tool');
-                    if (tool) {
+                    } else if (tool) {
+                        console.log('Footer tool clicked:', tool);
                         scrollToToolsSection();
                         setTimeout(() => {
                             openToolModal(tool);
@@ -1548,7 +1382,9 @@
                 });
             });
             
-            // Footer company links
+            // ============================================
+            // FOOTER COMPANY LINKS
+            // ============================================
             aboutLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 showAboutUs();
@@ -1569,22 +1405,29 @@
                 scrollToArticlesSection();
             });
             
-            // Modal close buttons
+            // ============================================
+            // MODAL CONTROLS
+            // ============================================
             closeModal.addEventListener('click', closeToolModal);
             cancelBtn.addEventListener('click', closeToolModal);
-            
-            // Process button
             processBtn.addEventListener('click', processFiles);
             
-            // File input handling
+            // File handling
             fileInput.addEventListener('change', handleFileSelect);
-            
-            // Drag and drop for files
             dropArea.addEventListener('click', () => fileInput.click());
             dropArea.addEventListener('dragover', handleDragOver);
             dropArea.addEventListener('drop', handleFileDrop);
             
-            // Read more buttons for articles
+            // Close modal on outside click
+            window.addEventListener('click', function(e) {
+                if (e.target === toolModal) {
+                    closeToolModal();
+                }
+            });
+            
+            // ============================================
+            // BLOG ARTICLES
+            // ============================================
             readMoreButtons.forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -1593,11 +1436,9 @@
                 });
             });
             
-            // Mobile menu toggle
-            mobileMenuBtn.addEventListener('click', toggleMobileSidebar);
-            sidebarOverlay.addEventListener('click', closeMobileSidebar);
-            
-            // Search functionality
+            // ============================================
+            // SEARCH FUNCTIONALITY
+            // ============================================
             searchBtn.addEventListener('click', performSearch);
             searchInput.addEventListener('keyup', function(e) {
                 if (e.key === 'Enter') {
@@ -1605,78 +1446,123 @@
                 }
             });
             
-            // Close modal when clicking outside
-            window.addEventListener('click', function(e) {
-                if (e.target === toolModal) {
-                    closeToolModal();
-                }
-            });
-            
-            // Handle window resize
+            // ============================================
+            // WINDOW RESIZE HANDLER
+            // ============================================
             window.addEventListener('resize', handleWindowResize);
+            
+            console.log('All event listeners set up');
         }
         
-        // Filter tools by category
+        // ============================================
+        // CORE FUNCTIONALITY FUNCTIONS
+        // ============================================
+        function renderTools() {
+            console.log('Rendering tools...');
+            
+            // Clear current tools
+            toolsContainer.innerHTML = '';
+            
+            // Create and append tool cards
+            toolsData.forEach(tool => {
+                const toolCard = document.createElement('div');
+                toolCard.className = 'tool-card';
+                toolCard.setAttribute('data-category', tool.category);
+                toolCard.setAttribute('data-tool', tool.id);
+                
+                toolCard.innerHTML = `
+                    <div class="tool-icon">
+                        <i class="${tool.icon}"></i>
+                    </div>
+                    <div class="tool-content">
+                        <h3>${tool.name}</h3>
+                        <p>${tool.description}</p>
+                        <a class="tool-btn open-tool" data-tool="${tool.id}">Use Tool</a>
+                    </div>
+                `;
+                
+                toolsContainer.appendChild(toolCard);
+            });
+            
+            // Add event listeners to new tool cards
+            document.querySelectorAll('.open-tool').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const tool = this.getAttribute('data-tool');
+                    console.log('Tool button clicked:', tool);
+                    openToolModal(tool);
+                });
+            });
+            
+            // Add click event to entire tool card
+            document.querySelectorAll('.tool-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const tool = this.getAttribute('data-tool');
+                    console.log('Tool card clicked:', tool);
+                    openToolModal(tool);
+                });
+            });
+            
+            console.log('Tools rendered successfully');
+        }
+        
         function filterToolsByCategory(category) {
+            console.log('Filtering tools by category:', category);
+            
             currentCategory = category;
             
-            // Update tools section title
+            // Update section title
             if (category === 'all') {
                 toolsSectionTitle.textContent = 'Popular PDF Tools';
             } else {
-                const categoryName = document.querySelector(`.filter-btn[data-category="${category}"]`).textContent;
-                toolsSectionTitle.textContent = `${categoryName} Tools`;
+                const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+                toolsSectionTitle.textContent = `${categoryName} PDF Tools`;
             }
             
-            // Show/hide tools based on category
+            // Show/hide tools
             const toolCards = document.querySelectorAll('.tool-card');
+            let visibleCount = 0;
+            
             toolCards.forEach(card => {
                 if (category === 'all' || card.getAttribute('data-category') === category) {
                     card.style.display = 'flex';
-                    card.classList.add('fade-in');
+                    visibleCount++;
                 } else {
                     card.style.display = 'none';
                 }
             });
             
-            // Update URL hash for deep linking
-            window.location.hash = category !== 'all' ? `category=${category}` : '';
+            console.log(`Filtered to show ${visibleCount} tools`);
+            
+            // Update URL
+            window.history.pushState(null, '', `#category=${category}`);
         }
         
-        // Update active filter button
         function updateActiveFilter(activeButton) {
             filterButtons.forEach(btn => btn.classList.remove('active'));
             activeButton.classList.add('active');
             
-            // Also update sidebar
+            // Update sidebar
             updateActiveSidebarByCategory(activeButton.getAttribute('data-category'));
         }
         
-        // Update active filter by category
         function updateActiveFilterByCategory(category) {
             filterButtons.forEach(btn => {
-                if (btn.getAttribute('data-category') === category) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+                btn.classList.toggle('active', btn.getAttribute('data-category') === category);
             });
             
             updateActiveSidebarByCategory(category);
         }
         
-        // Update active sidebar link
         function updateActiveSidebar(activeLink) {
             sidebarLinks.forEach(link => link.classList.remove('active'));
             activeLink.classList.add('active');
         }
         
-        // Update active sidebar by category
         function updateActiveSidebarByCategory(category) {
             sidebarLinks.forEach(link => {
-                if (link.getAttribute('data-category') === category) {
-                    link.classList.add('active');
-                } else if (category === 'all' && link.getAttribute('data-category') === 'all') {
+                const linkCategory = link.getAttribute('data-category');
+                if (linkCategory === category || (category === 'all' && linkCategory === 'all')) {
                     link.classList.add('active');
                 } else {
                     link.classList.remove('active');
@@ -1684,50 +1570,81 @@
             });
         }
         
-        // Open tool modal
+        // ============================================
+        // SIDEBAR FUNCTIONS - CRITICAL FIX
+        // ============================================
+        function toggleSidebar() {
+            console.log('Toggling sidebar...');
+            
+            if (sidebar.classList.contains('active')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        }
+        
+        function openSidebar() {
+            console.log('Opening sidebar...');
+            sidebar.classList.add('active');
+            sidebar.style.left = '0';
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeSidebar() {
+            console.log('Closing sidebar...');
+            sidebar.classList.remove('active');
+            sidebar.style.left = '-100%';
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // ============================================
+        // TOOL MODAL FUNCTIONS
+        // ============================================
         function openToolModal(tool) {
+            console.log('Opening tool modal:', tool);
+            
             currentTool = tool;
             selectedFiles = [];
             fileList.innerHTML = '';
             successMessage.style.display = 'none';
             
-            // Set modal title and options based on tool
+            // Set modal title
+            const toolObj = tools.find(t => t.id === tool);
+            modalTitle.textContent = toolObj ? toolObj.name : 'PDF Tool';
+            
+            // Set modal options
             if (toolModalData[tool]) {
-                modalTitle.textContent = toolModalData[tool].title;
                 toolSpecificOptions.innerHTML = toolModalData[tool].options;
             } else {
-                const toolName = tools.find(t => t.id === tool)?.name || tool;
-                modalTitle.textContent = toolName;
-                toolSpecificOptions.innerHTML = `<p>Process your PDF files with the ${toolName} tool.</p>`;
+                toolSpecificOptions.innerHTML = `<p>Process your PDF files with this tool.</p>`;
             }
             
-            // Show file input for tools that require files
-            document.getElementById('file-input-section').style.display = 'block';
-            processBtn.textContent = 'Process Files';
-            
+            // Show modal
             toolModal.style.display = 'flex';
         }
         
-        // Close tool modal
         function closeToolModal() {
+            console.log('Closing tool modal');
             toolModal.style.display = 'none';
             selectedFiles = [];
         }
         
-        // Handle file selection
+        // ============================================
+        // FILE HANDLING FUNCTIONS
+        // ============================================
         function handleFileSelect(e) {
             const files = e.target.files;
             handleFiles(files);
         }
         
-        // Handle drag over
         function handleDragOver(e) {
             e.preventDefault();
             dropArea.style.borderColor = '#e53935';
             dropArea.style.backgroundColor = '#fff9f9';
         }
         
-        // Handle file drop
         function handleFileDrop(e) {
             e.preventDefault();
             dropArea.style.borderColor = '#e0e0e0';
@@ -1736,13 +1653,14 @@
             handleFiles(files);
         }
         
-        // Handle files (add to list)
         function handleFiles(files) {
+            console.log('Handling files:', files.length);
+            
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 
                 // Check if file is PDF
-                if (file.type === 'application/pdf') {
+                if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
                     selectedFiles.push(file);
                     
                     const fileItem = document.createElement('div');
@@ -1763,7 +1681,7 @@
                         selectedFiles.splice(index, 1);
                         fileList.removeChild(fileItem);
                         
-                        // Update indices for remaining remove buttons
+                        // Update indices
                         const removeButtons = fileList.querySelectorAll('.remove-file');
                         removeButtons.forEach((btn, idx) => {
                             btn.setAttribute('data-index', idx);
@@ -1775,14 +1693,15 @@
             }
         }
         
-        // Process files (simulate processing)
         function processFiles() {
+            console.log('Processing files...');
+            
             if (selectedFiles.length === 0) {
                 alert('Please select at least one PDF file.');
                 return;
             }
             
-            // Show success message after a delay (simulating processing)
+            // Simulate processing
             processBtn.textContent = 'Processing...';
             processBtn.disabled = true;
             
@@ -1793,10 +1712,58 @@
                 
                 // Scroll to success message
                 successMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                console.log('Files processed successfully');
             }, 1500);
         }
         
-        // Toggle article expansion
+        // ============================================
+        // NAVIGATION FUNCTIONS
+        // ============================================
+        function scrollToToolsSection() {
+            console.log('Scrolling to tools section');
+            const dashboard = document.getElementById('dashboard');
+            dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function scrollToArticlesSection() {
+            console.log('Scrolling to articles section');
+            articlesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        function performSearch() {
+            const query = searchInput.value.trim().toLowerCase();
+            console.log('Performing search:', query);
+            
+            if (query === '') {
+                toolsData = [...tools];
+                filterToolsByCategory(currentCategory);
+                return;
+            }
+            
+            // Filter tools
+            const filteredTools = tools.filter(tool => 
+                tool.name.toLowerCase().includes(query) || 
+                tool.description.toLowerCase().includes(query) ||
+                tool.category.toLowerCase().includes(query)
+            );
+            
+            // Temporarily show filtered results
+            const originalData = [...toolsData];
+            toolsData = filteredTools;
+            
+            renderTools();
+            toolsSectionTitle.textContent = `Search Results for "${query}"`;
+            
+            // Restore original data
+            setTimeout(() => {
+                toolsData = originalData;
+            }, 0);
+        }
+        
         function toggleArticleExpand(articleId, button) {
             const excerpt = document.getElementById(`article-${articleId}`);
             
@@ -1811,114 +1778,29 @@
             }
         }
         
-        // Toggle mobile sidebar
-        function toggleMobileSidebar() {
-            sidebar.classList.toggle('active');
-            sidebarOverlay.classList.toggle('active');
-            
-            if (sidebar.classList.contains('active')) {
-                mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i>';
-                document.body.style.overflow = 'hidden';
-            } else {
-                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-                document.body.style.overflow = 'auto';
-            }
-        }
-        
-        // Close mobile sidebar
-        function closeMobileSidebar() {
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-            mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-            document.body.style.overflow = 'auto';
-        }
-        
-        // Show about us
-        function showAboutUs() {
-            alert('About Helping PDF Tool:\n\nWe are a free online PDF tool service that provides secure, client-side PDF processing. Our tools run entirely in your browser, ensuring your documents never leave your device. No registration required, no file uploads to servers, just fast and secure PDF processing.');
-        }
-        
-        // Show privacy policy
-        function showPrivacyPolicy(e) {
-            if (e) e.preventDefault();
-            alert('Privacy Policy:\n\nYour privacy is our priority. Helping PDF Tool processes all PDF files locally in your browser. We do not store, upload, or transmit your documents to any server. All processing happens on your device, ensuring complete confidentiality and security of your sensitive documents.');
-        }
-        
-        // Show terms of service
-        function showTermsOfService(e) {
-            if (e) e.preventDefault();
-            alert('Terms of Service:\n\nHelping PDF Tool is a free service for personal and commercial use. You retain all rights to your documents. We are not responsible for any data loss or damage resulting from the use of this tool. The service is provided "as is" without any warranties.');
-        }
-        
-        // Scroll to tools section
-        function scrollToToolsSection() {
-            const dashboard = document.getElementById('dashboard');
-            dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        
-        // Scroll to articles section
-        function scrollToArticlesSection() {
-            articlesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        
-        // Perform search
-        function performSearch() {
-            const query = searchInput.value.trim().toLowerCase();
-            
-            if (query === '') {
-                // If search is empty, show all tools
-                toolsData = [...tools];
-                filterToolsByCategory(currentCategory);
-                return;
-            }
-            
-            // Filter tools based on search query
-            const filteredTools = tools.filter(tool => 
-                tool.name.toLowerCase().includes(query) || 
-                tool.description.toLowerCase().includes(query) ||
-                tool.category.toLowerCase().includes(query)
-            );
-            
-            // Temporarily replace toolsData with filtered results
-            const originalToolsData = [...toolsData];
-            toolsData = filteredTools;
-            
-            // Show filtered tools
-            renderTools();
-            
-            // Update section title
-            toolsSectionTitle.textContent = `Search Results for "${query}"`;
-            
-            // Restore original data for future filtering
-            setTimeout(() => {
-                toolsData = originalToolsData;
-            }, 0);
-        }
-        
-        // Handle window resize
         function handleWindowResize() {
             if (window.innerWidth > 1024) {
-                // On desktop, ensure sidebar is visible and close mobile overlay
+                // Desktop: sidebar always visible
                 sidebar.classList.add('active');
-                sidebar.style.transform = 'translateX(0)';
+                sidebar.style.left = '0';
                 sidebarOverlay.classList.remove('active');
-                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
                 document.body.style.overflow = 'auto';
             } else {
-                // On mobile, hide sidebar by default
-                sidebar.classList.remove('active');
-                sidebar.style.transform = 'translateX(-100%)';
+                // Mobile: sidebar hidden
+                if (sidebar.classList.contains('active')) {
+                    sidebar.style.left = '0';
+                } else {
+                    sidebar.style.left = '-100%';
+                }
             }
         }
         
-        // Check URL hash on load for deep linking
         function checkUrlHash() {
             if (window.location.hash) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
                 const category = params.get('category');
                 
                 if (category) {
-                    // Small delay to ensure DOM is fully loaded
                     setTimeout(() => {
                         filterToolsByCategory(category);
                         updateActiveFilterByCategory(category);
@@ -1927,8 +1809,42 @@
             }
         }
         
-        // Initialize the application when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
+        // ============================================
+        // INFO MODAL FUNCTIONS
+        // ============================================
+        function showAboutUs() {
+            alert('About Helping PDF Tool:\n\nWe provide free, secure PDF tools that run entirely in your browser. No file uploads, no registration, just fast PDF processing.');
+        }
+        
+        function showPrivacyPolicy() {
+            alert('Privacy Policy:\n\nAll processing happens locally in your browser. We never see or store your files.');
+        }
+        
+        function showTermsOfService() {
+            alert('Terms of Service:\n\nFree for personal and commercial use. No warranties provided.');
+        }
+        
+        // ============================================
+        // ERROR HANDLING
+        // ============================================
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Error caught:', { msg, url, lineNo, columnNo, error });
+            return false;
+        };
+        
+        // ============================================
+        // INITIALIZE APP
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded');
+            initializeApp();
+        });
+        
+        // Test sidebar immediately
+        console.log('Testing sidebar functionality...');
+        console.log('Mobile menu button found:', !!mobileMenuBtn);
+        console.log('Sidebar element found:', !!sidebar);
+        console.log('Sidebar overlay found:', !!sidebarOverlay);
     </script>
 </body>
 </html>
