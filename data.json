@@ -9,8 +9,24 @@
       "id": "sign-pdf",
       "name": "Sign PDF Online",
       "badge": "No Signup",
-      "description": "بغیر کسی اکاؤنٹ کے اپنی پی ڈی ایف پر سائن کریں، ڈرا کریں یا امیج اپ لوڈ کریں۔",
+      "description": "Sign your PDF documents online without creating an account. Draw, type, or upload your signature locally in your browser.",
       "link": "sign-pdf.html",
+      "status": "live"
+    },
+    {
+      "id": "fill-form",
+      "name": "Fill PDF Forms",
+      "badge": "No Watermark",
+      "description": "Fill out PDF forms directly in your browser. Add text to any field and download your document without any watermarks.",
+      "link": "fill-form.html",
+      "status": "live"
+    },
+    {
+      "id": "compress-pdf",
+      "name": "Compress PDF",
+      "badge": "Smart Compressor",
+      "description": "Reduce PDF file size for resumes and documents while maintaining high quality for email attachments and online applications.",
+      "link": "compress.html",
       "status": "live"
     }
   ]
