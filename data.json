@@ -1,0 +1,17 @@
+{
+  "site_settings": {
+    "title": "Helping PDF",
+    "header_instruction": "No Account Required | No Hidden Charges | No Watermark",
+    "footer_text": "© 2026 Helping PDF Tool. All rights reserved."
+  },
+  "tools": [
+    {
+      "id": "sign-pdf",
+      "name": "Sign PDF Online",
+      "badge": "No Signup",
+      "description": "بغیر کسی اکاؤنٹ کے اپنی پی ڈی ایف پر سائن کریں، ڈرا کریں یا امیج اپ لوڈ کریں۔",
+      "link": "sign-pdf.html",
+      "status": "live"
+    }
+  ]
+}
