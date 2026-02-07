@@ -1,92 +1,110 @@
 <!DOCTYPE html>
-<html lang="ur">
+<html lang="ur" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="site-title">Helping PDF</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Helping PDF Tool - 3 Professional Tools</title>
+    <meta name="robots" content="index, follow">
+    
     <style>
-        :root { --primary: #e53935; --secondary: #333333; }
-        .tool-card { transition: all 0.3s; border: 1px solid #eee; cursor: pointer; }
-        .tool-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        /* آپ کے پرانے موڈلز کا اسٹائل یہاں برقرار رہے گا */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 90%; max-width: 800px; border-radius: 12px; overflow-y: auto; max-height: 90vh; }
+        :root { --red: #e5322d; --black: #000000; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Arial; margin: 0; background: var(--bg); display: flex; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--black); color: white; height: 100vh; position: fixed; padding: 20px; }
+        .logo { font-size: 24px; font-weight: bold; margin-bottom: 30px; }
+        .logo span { color: var(--red); }
+        .nav-link { display: block; color: #ccc; padding: 15px 0; text-decoration: none; border-bottom: 1px solid #222; }
+        .nav-link:hover { color: var(--red); }
+
+        /* Main Content */
+        .main { margin-left: 300px; width: calc(100% - 300px); padding: 40px; }
+        
+        /* The 3-Instruction Banner */
+        .trust-box { 
+            background: white; border: 2px dashed var(--red); padding: 25px; 
+            text-align: center; border-radius: 12px; margin-bottom: 40px; 
+        }
+        .trust-box h2 { color: var(--black); margin: 0; font-size: 22px; }
+        .trust-box p { color: #666; margin-top: 10px; font-weight: 500; }
+
+        /* 3 Specific Tools Layout */
+        .tools-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
+        .tool-card { 
+            background: white; padding: 40px 20px; border-radius: 15px; text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-top: 6px solid var(--red);
+            transition: 0.3s; cursor: pointer;
+        }
+        .tool-card:hover { transform: translateY(-10px); }
+        .tool-card i { font-size: 40px; color: var(--red); }
+
+        /* Footer */
+        footer { margin-top: 60px; padding: 30px; background: #eee; border-radius: 10px; display: flex; justify-content: space-between; }
+        .footer-col { width: 30%; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
 
-    <header class="bg-white shadow-md p-4 sticky top-0 z-1000">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-2xl font-bold text-gray-800">Helping<span class="text-red-600">PDF</span></div>
-            <div id="header-instruction" class="hidden md:block text-sm font-medium text-gray-600 border-l-4 border-red-500 pl-3">
-                </div>
+    <div class="sidebar">
+        <div class="logo">Helping <span>PDF Tool</span></div>
+        <nav>
+            <a href="#signer" class="nav-link">PDF Signer</a>
+            <a href="#filler" class="nav-link">Form Filler</a>
+            <a href="#compressor" class="nav-link">PDF Compressor</a>
+            <a href="admin.html" class="nav-link" style="margin-top: 40px; color: var(--red);">Admin Panel</a>
+        </nav>
+    </div>
+
+    <div class="main">
+        <div class="trust-box">
+            <h2 id="main-title">No Account Required | No Hidden Charges | No Watermark</h2>
+            <p>100% Safe & Private – Your files never leave your browser. Just upload and work.</p>
         </div>
-    </header>
 
-    <main class="container mx-auto px-4 py-10">
-        <h1 class="text-center text-3xl font-bold mb-4 text-gray-800" id="main-title">Free Online PDF Tools</h1>
-        <p class="text-center text-gray-600 mb-10 max-w-2xl mx-auto" id="site-desc">No account, No watermarks. Your data stays in your browser.</p>
-
-        <div id="tools-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="tools-container">
+            <div class="tool-card" onclick="openTool('signer')">
+                <h3>PDF Signer</h3>
+                <p>Draw, Type or Upload your signature safely.</p>
             </div>
-    </main>
-
-    <footer class="bg-gray-800 text-white text-center p-6 mt-10">
-        <p id="footer-text"></p>
-    </footer>
-
-    <div id="tool-modal" class="modal">
-        <div class="modal-content p-6">
-            <div class="flex justify-between items-center border-b pb-4 mb-4">
-                <h2 id="modal-title" class="text-xl font-bold">Tool Name</h2>
-                <button onclick="closeTool()" class="text-2xl">&times;</button>
+            <div class="tool-card" onclick="openTool('filler')">
+                <h3>Form Filler</h3>
+                <p>Type anywhere on PDF and fill forms easily.</p>
             </div>
-            <div id="tool-ui-container">
-                </div>
+            <div class="tool-card" onclick="openTool('compressor')">
+                <h3>PDF Compressor</h3>
+                <p>Reduce file size without losing quality.</p>
+            </div>
         </div>
+
+        <footer>
+            <div class="footer-col">
+                <h4>About Helping PDF Tool</h4>
+                <p id="about-text">We provide professional-grade tools for free, ensuring your data remains in your browser.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Privacy & Robots</h4>
+                <p>Safe City 360 Standard Security. No data storage.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <p id="contact-email">sarfraz12561@coder.github.io</p>
+            </div>
+        </footer>
     </div>
 
     <script>
-        // JSON سے ڈیٹا لوڈ کرنے والا ماسٹر فنکشن
-        async function initSite() {
-            const res = await fetch('data.json');
-            const data = await res.json();
+        // ایڈمن پینل سے ڈیٹا لوڈ کرنے کا لاجک
+        window.onload = function() {
+            const savedTitle = localStorage.getItem('bannerText');
+            const savedEmail = localStorage.getItem('adminEmail');
+            if(savedTitle) document.getElementById('main-title').innerText = savedTitle;
+            if(savedEmail) document.getElementById('contact-email').innerText = savedEmail;
+        };
 
-            // سیٹنگز اپ ڈیٹ کریں
-            document.getElementById('header-instruction').innerText = data.site_settings.header_instruction;
-            document.getElementById('footer-text').innerText = data.site_settings.footer_text;
-
-            // ٹولز کے کارڈز بنائیں
-            const container = document.getElementById('tools-container');
-            container.innerHTML = '';
-
-            data.tools.forEach(tool => {
-                if(tool.status === 'live') {
-                    container.innerHTML += `
-                        <div class="tool-card bg-white p-6 rounded-xl text-center" onclick="openTool('${tool.id}')">
-                            <div class="text-4xl mb-4 text-red-500"><i class="fas fa-file-pdf"></i></div>
-                            <h3 class="font-bold text-xl mb-2">${tool.name}</h3>
-                            <p class="text-gray-500 text-sm mb-4">${tool.description}</p>
-                            <span class="bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full">${tool.badge}</span>
-                        </div>
-                    `;
-                }
-            });
+        function openTool(toolName) {
+            alert(toolName + " ٹول ابھی لوڈ ہو رہا ہے...");
+            // یہاں آپ کے 2300 لائنوں والے فنکشنز آئیں گے
         }
-
-        function openTool(id) {
-            document.getElementById('tool-modal').style.display = 'flex';
-            document.getElementById('modal-title').innerText = id.replace('-', ' ').toUpperCase();
-            document.getElementById('tool-ui-container').innerHTML = `<p class="text-center py-10">ٹول لوڈ ہو رہا ہے... یہاں آپ کا DeepSeek والا کوڈ آئے گا۔</p>`;
-        }
-
-        function closeTool() {
-            document.getElementById('tool-modal').style.display = 'none';
-        }
-
-        window.onload = initSite;
     </script>
 </body>
 </html>
