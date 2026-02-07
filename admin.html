@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <title>Helping PDF - Admin Control Panel</title>
+    <style>
+        :root { --red: #e5322d; --black: #1a1a1a; }
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
+        .admin-box { background: white; width: 100%; max-width: 600px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--red); }
+        h1 { color: var(--black); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        label { display: block; margin-top: 20px; font-weight: bold; color: #444; }
+        input, textarea { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        .save-btn { background: var(--red); color: white; border: none; padding: 15px 30px; margin-top: 25px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        .save-btn:hover { background: #c42824; }
+        .status { margin-top: 15px; color: green; font-weight: bold; display: none; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="admin-box">
+    <h1>کنٹرول پینل (Admin)</h1>
+    <p style="color: #666;">یہاں سے آپ اپنی ویب سائٹ کی لائیو سیٹنگز بدل سکتے ہیں۔</p>
+
+    <label>ہیڈر کی ہدایت (Top Banner):</label>
+    <input type="text" id="bannerText" placeholder="No Account Required | No Hidden Charges...">
+
+    <label>رابطہ ای میل (Contact Email):</label>
+    <input type="email" id="adminEmail" placeholder="your-email@example.com">
+
+    <label>ویب سائٹ کے بارے میں (About Us):</label>
+    <textarea id="aboutUs" rows="4" placeholder="ہم بہترین ٹولز فراہم کرتے ہیں..."></textarea>
+
+    <button class="save-btn" onclick="saveToJSON()">سیٹنگز محفوظ کریں</button>
+    <div id="statusMsg" class="status">✓ سیٹنگز محفوظ ہو گئیں! اب اپنی ویب سائٹ چیک کریں۔</div>
+</div>
+
+<script>
+    // پہلے سے موجود ڈیٹا لوڈ کرنا
+    window.onload = function() {
+        document.getElementById('bannerText').value = localStorage.getItem('bannerText') || "No Account Required | No Hidden Charges | No Watermark";
+        document.getElementById('adminEmail').value = localStorage.getItem('adminEmail') || "sarfraz12561@coder.github.io";
+        document.getElementById('aboutUs').value = localStorage.getItem('aboutUs') || "We provide professional-grade tools for free.";
+    };
+
+    // ڈیٹا سیو کرنے کا فنکشن
+    function saveToJSON() {
+        const bText = document.getElementById('bannerText').value;
+        const eText = document.getElementById('adminEmail').value;
+        const aText = document.getElementById('aboutUs').value;
+
+        // LocalStorage میں ڈیٹا محفوظ کرنا (تاکہ ویب سائٹ اسے پڑھ سکے)
+        localStorage.setItem('bannerText', bText);
+        localStorage.setItem('adminEmail', eText);
+        localStorage.setItem('aboutUs', aText);
+
+        // کامیابی کا میسج دکھانا
+        const msg = document.getElementById('statusMsg');
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    }
+</script>
+
+</body>
+</html>
